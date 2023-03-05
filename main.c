@@ -18,6 +18,7 @@ this is an exmple
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <math.h>
 #include "stdmap.h"
 #include "stdstring.h"
 
@@ -73,8 +74,9 @@ char* getClosestWord(Map* dictionary, String* incorrectSpelledWord) {
     int global_numOfEdits = INT_MAX;
     for (int i = 0; i < TABLE_SIZE; i++) {
         if (dictionary ->entries[i] == NULL) continue;
-        if (dictionary ->entries[i] ->value >= incorrectSpelledWord ->size - 2 &&
-            dictionary ->entries[i] ->value <= incorrectSpelledWord ->size + 2) {
+        int range = ceil(incorrectSpelledWord ->size * 0.75);
+        if (dictionary ->entries[i] ->value >= incorrectSpelledWord ->size - range &&
+            dictionary ->entries[i] ->value <= incorrectSpelledWord ->size + range) {
             int numOfEdits = Levenshtein_Algo(incorrectSpelledWord ->data, dictionary ->entries[i] ->key);
             if (numOfEdits < global_numOfEdits) {
                 strCopy(closestWord, dictionary ->entries[i] ->key);
@@ -84,7 +86,10 @@ char* getClosestWord(Map* dictionary, String* incorrectSpelledWord) {
             Pair* temp = dictionary ->entries[i];
             if (temp ->next != NULL) { //if a collision has occured
                 temp = temp ->next;
-                while (temp != NULL) {
+                while (temp != NULL &&
+                       temp ->value >= incorrectSpelledWord ->size - range &&
+                        temp ->value <= incorrectSpelledWord ->size + range)
+                    {
                     numOfEdits = Levenshtein_Algo(incorrectSpelledWord ->data, temp ->key);
                     if (numOfEdits < global_numOfEdits) {
                         strCopy(closestWord, temp ->key);
@@ -97,8 +102,8 @@ char* getClosestWord(Map* dictionary, String* incorrectSpelledWord) {
         else if (dictionary ->entries[i] ->next != NULL) {
             Pair* temp = dictionary ->entries[i] ->next;
             while (temp != NULL) {
-                if (temp ->value >= incorrectSpelledWord ->size - 2 &&
-                    temp ->value <= incorrectSpelledWord ->size + 2) {
+                if (temp ->value >= incorrectSpelledWord ->size - range &&
+                    temp ->value <= incorrectSpelledWord ->size + range) {
                     int numOfEdits = Levenshtein_Algo(incorrectSpelledWord ->data, temp ->key);
                     if (numOfEdits < global_numOfEdits) {
                         strCopy(closestWord, temp ->key);
